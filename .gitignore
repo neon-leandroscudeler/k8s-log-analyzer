@@ -1,0 +1,33 @@
+# Backend .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+*.cache
+*.log
+.vs/
+.vscode/
+*.swp
+*~
+.DS_Store
+appsettings.Development.json
+
+# Frontend Angular
+/Frontend/node_modules/
+/Frontend/dist/
+/Frontend/.angular/
+/Frontend/.sass-cache/
+/Frontend/npm-debug.log*
+/Frontend/yarn-error.log
+/Frontend/yarn.lock
+/Frontend/package-lock.json
+/Frontend/.pnp
+/Frontend/.pnp.js
+
+# IDE
+.idea/
+*.iml
+*.iws
+
+# System Files
+Thumbs.db

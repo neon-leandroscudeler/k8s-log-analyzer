@@ -1,0 +1,172 @@
+.log-viewer-container {
+  padding: 20px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #121212;
+}
+
+.filter-card {
+  flex-shrink: 0;
+  background-color: #1e1e1e;
+}
+
+mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  color: #bb86fc;
+}
+
+.filter-form {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.multi-pod-checkbox {
+  min-width: 300px;
+  font-size: 14px;
+}
+
+.search-button {
+  height: 56px;
+  min-width: 140px;
+  
+  mat-spinner {
+    display: inline-block;
+    margin-right: 8px;
+  }
+}
+
+.table-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #1e1e1e;
+
+  mat-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.filter-input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.table-container {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+
+  table {
+    width: 100%;
+    background-color: #1e1e1e;
+  }
+  
+  th {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+  }
+  
+  td {
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #333 !important;
+  }
+  
+  tr:hover {
+    background-color: #2d2d2d !important;
+  }
+}
+
+.message-cell {
+  max-width: 600px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.pod-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #9e9e9e;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+mat-chip {
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+  justify-content: center;
+}
+
+.log-level-error {
+  background-color: #cf6679 !important;
+  color: #121212 !important;
+  font-weight: 600 !important;
+}
+
+.log-level-warn {
+  background-color: #ffb74d !important;
+  color: #121212 !important;
+  font-weight: 600 !important;
+}
+
+.log-level-info {
+  background-color: #03dac6 !important;
+  color: #121212 !important;
+  font-weight: 600 !important;
+}
+
+.log-level-debug {
+  background-color: #757575 !important;
+  color: #e0e0e0 !important;
+  font-weight: 600 !important;
+}
+
+.log-level-default {
+  background-color: #546e7a !important;
+  color: #e0e0e0 !important;
+  font-weight: 600 !important;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px !important;
+}
+
+.no-data-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #9e9e9e;
+  font-size: 16px;
+
+  mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+    color: #9e9e9e;
+  }
+}
+
+::ng-deep .error-snackbar {
+  background-color: #cf6679;
+  color: #121212;
+}
