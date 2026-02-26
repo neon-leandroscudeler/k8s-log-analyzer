@@ -15,19 +15,20 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>{{ searchMode === 'single' ? 'Pod Name' : 'Pod Name Prefix' }}</mat-label>
-          <input matInput [(ngModel)]="podName" [placeholder]="searchMode === 'single' ? 'my-pod-123' : 'api-credit-cards'">
+          <mat-label>Pod Name Prefix</mat-label>
+          <input matInput [(ngModel)]="podName" placeholder="api-credit-cards">
           <mat-icon matSuffix>view_in_ar</mat-icon>
         </mat-form-field>
 
-        <div class="search-mode-container">
-          <label class="search-mode-label">Modo de busca:</label>
-          <mat-radio-group [(ngModel)]="searchMode" color="primary" class="search-mode-group">
-            <mat-radio-button value="single">Único pod</mat-radio-button>
-            <mat-radio-button value="all">Todos (com canary)</mat-radio-button>
-            <mat-radio-button value="without-canary">Sem canary</mat-radio-button>
-          </mat-radio-group>
-        </div>
+        <mat-form-field appearance="outline" class="form-field search-mode-field">
+          <mat-label>Modo de busca</mat-label>
+          <mat-select [(ngModel)]="searchMode" color="primary">
+            <mat-option value="primary">Primary (somente pods primary)</mat-option>
+            <mat-option value="all">Todos (com canary)</mat-option>
+            <mat-option value="without-canary">Sem canary/primary</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>filter_list</mat-icon>
+        </mat-form-field>
 
         <button mat-raised-button color="primary" (click)="fetchLogs()" [disabled]="isLoading" class="search-button">
           <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>
@@ -51,13 +52,13 @@
           
           <!-- Timestamp Column -->
           <ng-container matColumnDef="timestamp">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Horário</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-column">Horário</th>
             <td mat-cell *matCellDef="let log">{{ log.timestamp | date:'dd/MM/yyyy HH:mm:ss.SSS' }}</td>
           </ng-container>
 
           <!-- Level Column -->
           <ng-container matColumnDef="level">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-column">Tipo</th>
             <td mat-cell *matCellDef="let log">
               <mat-chip [ngClass]="getLogLevelClass(log.level)">
                 {{ log.level }}
@@ -67,7 +68,7 @@
 
           <!-- Pod Name Column -->
           <ng-container matColumnDef="podName">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Pod</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header class="resizable-column">Pod</th>
             <td mat-cell *matCellDef="let log" class="pod-cell">{{ log.podName }}</td>
           </ng-container>
 

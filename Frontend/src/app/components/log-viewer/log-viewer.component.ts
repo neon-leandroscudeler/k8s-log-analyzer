@@ -12,7 +12,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { LogService } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
@@ -33,7 +34,8 @@ import { LogEntry } from '../../models/log-entry.model';
     MatProgressSpinnerModule,
     MatIconModule,
     MatSnackBarModule,
-    MatRadioModule
+    MatSelectModule,
+    ResizableColumnDirective
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
@@ -46,7 +48,7 @@ export class LogViewerComponent implements OnInit {
   podName: string = '';
   filterValue: string = '';
   isLoading: boolean = false;
-  searchMode: 'single' | 'all' | 'without-canary' = 'single';
+  searchMode: 'primary' | 'all' | 'without-canary' = 'primary';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -87,39 +89,39 @@ export class LogViewerComponent implements OnInit {
 
     this.isLoading = true;
     
-    const logObservable = this.searchMode === 'single'
-      ? this.logService.getLogs(this.namespace, this.podName)
-      : this.logService.getMultiplePodLogs(this.namespace, this.podName);
-
-    logObservable.subscribe({
+    // Sempre buscar múltiplos pods
+    this.logService.getMultiplePodLogs(this.namespace, this.podName).subscribe({
       next: (allLogs) => {
-        // Filtrar canary se necessário
+        // Filtrar conforme modo selecionado
         let logs = allLogs;
-        if (this.searchMode === 'without-canary') {
+        
+        if (this.searchMode === 'primary') {
+          // Apenas pods com -primary no nome
+          logs = allLogs.filter(log => log.podName.includes('-primary'));
+        } else if (this.searchMode === 'without-canary') {
+          // Sem canary nem primary
           logs = allLogs.filter(log => 
             !log.podName.includes('-canary') && 
             !log.podName.includes('-primary')
           );
         }
+        // 'all' não filtra nada
         
         this.dataSource.data = logs;
         this.isLoading = false;
         
-        if (this.searchMode !== 'single') {
-          const uniquePods = new Set(logs.map(l => l.podName));
-          const modeLabel = this.searchMode === 'all' ? 'todos os pods' : 'pods sem canary';
-          this.snackBar.open(`${logs.length} log entries de ${uniquePods.size} pod(s) (${modeLabel})`, 'Close', {
-            duration: 4000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom'
-          });
-        } else {
-          this.snackBar.open(`Successfully loaded ${logs.length} log entries`, 'Close', {
-            duration: 3000,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom'
-          });
-        }
+        const uniquePods = new Set(logs.map(l => l.podName));
+        const modeLabels = {
+          'primary': 'primary',
+          'all': 'todos os pods',
+          'without-canary': 'sem canary/primary'
+        };
+        
+        this.snackBar.open(`${logs.length} logs de ${uniquePods.size} pod(s) (${modeLabels[this.searchMode]})`, 'Close', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
       },
       error: (error) => {
         this.isLoading = false;
