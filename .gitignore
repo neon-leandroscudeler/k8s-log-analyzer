@@ -12,6 +12,9 @@
 .DS_Store
 appsettings.Development.json
 
+# Published binaries
+/Published/
+
 # Frontend Angular
 /Frontend/node_modules/
 /Frontend/dist/
