@@ -22,10 +22,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyHeader();
     });
 });
 
@@ -49,10 +48,24 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger";
 });
 
+// Serve static files from wwwroot
+var frontendPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (Directory.Exists(frontendPath))
+{
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+}
+
 app.UseCors("AllowAngularApp");
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Fallback to index.html for Angular routes
+if (Directory.Exists(frontendPath))
+{
+    app.MapFallbackToFile("index.html");
+}
 
 app.Run();

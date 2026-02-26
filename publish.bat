@@ -25,17 +25,17 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3/3] Copying files...
-if not exist "..\Published\Frontend" mkdir "..\Published\Frontend"
-xcopy /E /I /Y dist\frontend\browser ..\Published\Frontend
+if not exist "..\Published\Backend\wwwroot" mkdir "..\Published\Backend\wwwroot"
+xcopy /E /I /Y dist\k8s-log-analyzer\browser ..\Published\Backend\wwwroot
 
 echo.
 echo ========================================
 echo   Publishing completed successfully!
 echo ========================================
 echo.
-echo Published files are in: Published\
-echo - Backend: Published\Backend\
-echo - Frontend: Published\Frontend\
+echo Published files are in: Published\Backend\
+echo - API: Published\Backend\K8sLogAnalyzer.Api.exe
+echo - Web Files: Published\Backend\wwwroot\
 echo.
 echo To run the application:
 echo   1. Run: start-app.bat
