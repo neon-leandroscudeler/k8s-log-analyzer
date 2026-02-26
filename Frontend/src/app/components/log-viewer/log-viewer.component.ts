@@ -13,7 +13,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { LogService } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
@@ -34,8 +33,7 @@ import { LogEntry } from '../../models/log-entry.model';
     MatProgressSpinnerModule,
     MatIconModule,
     MatSnackBarModule,
-    MatSelectModule,
-    ResizableColumnDirective
+    MatSelectModule
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
