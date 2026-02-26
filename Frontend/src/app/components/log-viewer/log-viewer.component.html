@@ -15,14 +15,19 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
-          <mat-label>{{ searchMultiplePods ? 'Pod Name Prefix' : 'Pod Name' }}</mat-label>
-          <input matInput [(ngModel)]="podName" [placeholder]="searchMultiplePods ? 'api-credit-cards (busca api-credit-cards*)' : 'my-pod-123'">
+          <mat-label>{{ searchMode === 'single' ? 'Pod Name' : 'Pod Name Prefix' }}</mat-label>
+          <input matInput [(ngModel)]="podName" [placeholder]="searchMode === 'single' ? 'my-pod-123' : 'api-credit-cards'">
           <mat-icon matSuffix>view_in_ar</mat-icon>
         </mat-form-field>
 
-        <mat-checkbox [(ngModel)]="searchMultiplePods" color="primary" class="multi-pod-checkbox">
-          Buscar em múltiplos pods (incluindo canary)
-        </mat-checkbox>
+        <div class="search-mode-container">
+          <label class="search-mode-label">Modo de busca:</label>
+          <mat-radio-group [(ngModel)]="searchMode" color="primary" class="search-mode-group">
+            <mat-radio-button value="single">Único pod</mat-radio-button>
+            <mat-radio-button value="all">Todos (com canary)</mat-radio-button>
+            <mat-radio-button value="without-canary">Sem canary</mat-radio-button>
+          </mat-radio-group>
+        </div>
 
         <button mat-raised-button color="primary" (click)="fetchLogs()" [disabled]="isLoading" class="search-button">
           <mat-icon *ngIf="!isLoading">cloud_download</mat-icon>

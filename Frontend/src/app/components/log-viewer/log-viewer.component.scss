@@ -32,9 +32,28 @@ mat-card-title {
   min-width: 200px;
 }
 
-.multi-pod-checkbox {
+.search-mode-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-width: 300px;
+}
+
+.search-mode-label {
   font-size: 14px;
+  font-weight: 500;
+  color: #e0e0e0;
+  margin-bottom: 4px;
+}
+
+.search-mode-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  mat-radio-button {
+    margin-bottom: 4px;
+  }
 }
 
 .search-button {

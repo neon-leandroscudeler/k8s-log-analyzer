@@ -12,7 +12,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
 import { LogService } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
@@ -33,7 +33,7 @@ import { LogEntry } from '../../models/log-entry.model';
     MatProgressSpinnerModule,
     MatIconModule,
     MatSnackBarModule,
-    MatCheckboxModule
+    MatRadioModule
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
@@ -46,7 +46,7 @@ export class LogViewerComponent implements OnInit {
   podName: string = '';
   filterValue: string = '';
   isLoading: boolean = false;
-  searchMultiplePods: boolean = false;
+  searchMode: 'single' | 'all' | 'without-canary' = 'single';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -87,18 +87,28 @@ export class LogViewerComponent implements OnInit {
 
     this.isLoading = true;
     
-    const logObservable = this.searchMultiplePods
-      ? this.logService.getMultiplePodLogs(this.namespace, this.podName)
-      : this.logService.getLogs(this.namespace, this.podName);
+    const logObservable = this.searchMode === 'single'
+      ? this.logService.getLogs(this.namespace, this.podName)
+      : this.logService.getMultiplePodLogs(this.namespace, this.podName);
 
     logObservable.subscribe({
-      next: (logs) => {
+      next: (allLogs) => {
+        // Filtrar canary se necessário
+        let logs = allLogs;
+        if (this.searchMode === 'without-canary') {
+          logs = allLogs.filter(log => 
+            !log.podName.includes('-canary') && 
+            !log.podName.includes('-primary')
+          );
+        }
+        
         this.dataSource.data = logs;
         this.isLoading = false;
         
-        if (this.searchMultiplePods) {
+        if (this.searchMode !== 'single') {
           const uniquePods = new Set(logs.map(l => l.podName));
-          this.snackBar.open(`Successfully loaded ${logs.length} log entries from ${uniquePods.size} pod(s)`, 'Close', {
+          const modeLabel = this.searchMode === 'all' ? 'todos os pods' : 'pods sem canary';
+          this.snackBar.open(`${logs.length} log entries de ${uniquePods.size} pod(s) (${modeLabel})`, 'Close', {
             duration: 4000,
             horizontalPosition: 'center',
             verticalPosition: 'bottom'
