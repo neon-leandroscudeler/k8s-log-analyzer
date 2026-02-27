@@ -9,12 +9,27 @@ namespace K8sLogAnalyzer.Api.Controllers;
 public class LogsController : ControllerBase
 {
     private readonly ILogService _logService;
+    private readonly IKubernetesService _kubernetesService;
     private readonly ILogger<LogsController> _logger;
 
-    public LogsController(ILogService logService, ILogger<LogsController> logger)
+    public LogsController(ILogService logService, IKubernetesService kubernetesService, ILogger<LogsController> logger)
     {
         _logService = logService;
+        _kubernetesService = kubernetesService;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Check Kubernetes connection status and cluster information
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Connection status and cluster information</returns>
+    [HttpGet("status")]
+    [ProducesResponseType(typeof(ClusterInfoDto), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ClusterInfoDto>> CheckStatus(CancellationToken cancellationToken = default)
+    {
+        var clusterInfo = await _kubernetesService.GetClusterInfoAsync(cancellationToken);
+        return Ok(clusterInfo);
     }
 
     /// <summary>

@@ -5,6 +5,20 @@
         <mat-icon>search</mat-icon>
         K8s Log Analyzer
       </mat-card-title>
+      <div class="connection-status">
+        <mat-spinner *ngIf="checkingConnection" diameter="16"></mat-spinner>
+        <div *ngIf="!checkingConnection" 
+             class="status-badge" 
+             [ngClass]="k8sConnected ? 'connected' : 'disconnected'"
+             [matTooltip]="getClusterTooltip()"
+             matTooltipPosition="below">
+          <mat-icon>{{ k8sConnected ? 'check_circle' : 'cancel' }}</mat-icon>
+          <div class="status-info">
+            <span class="status-text">{{ k8sConnected ? 'Connected' : 'Disconnected' }}</span>
+            <span class="cluster-name">{{ clusterName }}</span>
+          </div>
+        </div>
+      </div>
     </mat-card-header>
     <mat-card-content>
       <div class="filter-form">
@@ -23,8 +37,8 @@
         <mat-form-field appearance="outline" class="form-field search-mode-field">
           <mat-label>Modo de busca</mat-label>
           <mat-select [(ngModel)]="searchMode" color="primary">
-            <mat-option value="primary">Primary (somente pods primary)</mat-option>
             <mat-option value="all">Todos (com canary)</mat-option>
+            <mat-option value="primary">Primary (somente pods primary)</mat-option>            
             <mat-option value="without-canary">Sem canary/primary</mat-option>
           </mat-select>
           <mat-icon matSuffix>filter_list</mat-icon>

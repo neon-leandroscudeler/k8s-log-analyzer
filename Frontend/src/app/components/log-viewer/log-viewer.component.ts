@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { LogService } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
@@ -33,12 +34,13 @@ import { LogEntry } from '../../models/log-entry.model';
     MatProgressSpinnerModule,
     MatIconModule,
     MatSnackBarModule,
-    MatSelectModule
+    MatSelectModule,
+    MatTooltipModule
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
 })
-export class LogViewerComponent implements OnInit {
+export class LogViewerComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['timestamp', 'level', 'podName', 'message'];
   dataSource: MatTableDataSource<LogEntry>;
   
@@ -47,6 +49,14 @@ export class LogViewerComponent implements OnInit {
   filterValue: string = '';
   isLoading: boolean = false;
   searchMode: 'primary' | 'all' | 'without-canary' = 'primary';
+  
+  // Status de conexão
+  k8sConnected: boolean = false;
+  checkingConnection: boolean = true;
+  clusterName: string = '';
+  contextName: string = '';
+  serverUrl: string = '';
+  private statusCheckInterval: any;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -68,6 +78,39 @@ export class LogViewerComponent implements OnInit {
         data.message.toLowerCase().includes(searchStr)
       );
     };
+
+    // Verificar status inicial
+    this.checkK8sConnectionStatus();
+
+    // Verificar status a cada 60 segundos
+    this.statusCheckInterval = setInterval(() => {
+      this.checkK8sConnectionStatus();
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+  }
+
+  checkK8sConnectionStatus(): void {
+    this.logService.checkConnectionStatus().subscribe({
+      next: (status) => {
+        this.k8sConnected = status.connected;
+        this.clusterName = status.clusterName || 'Unknown';
+        this.contextName = status.contextName || 'Unknown';
+        this.serverUrl = status.serverUrl || 'Unknown';
+        this.checkingConnection = false;
+      },
+      error: () => {
+        this.k8sConnected = false;
+        this.clusterName = 'Unknown';
+        this.contextName = 'Unknown';
+        this.serverUrl = 'Unknown';
+        this.checkingConnection = false;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -150,6 +193,13 @@ export class LogViewerComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  getClusterTooltip(): string {
+    if (!this.k8sConnected) {
+      return 'Não conectado ao cluster Kubernetes';
+    }
+    return `Cluster: ${this.clusterName}\nContexto: ${this.contextName}\nServidor: ${this.serverUrl}`;
   }
 
   getLogLevelClass(level: string): string {

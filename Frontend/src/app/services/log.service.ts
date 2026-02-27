@@ -4,6 +4,14 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { LogEntry } from '../models/log-entry.model';
 
+export interface ConnectionStatus {
+  connected: boolean;
+  status: string;
+  clusterName?: string;
+  contextName?: string;
+  serverUrl?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -36,5 +44,9 @@ export class LogService {
         timestamp: new Date(log.timestamp)
       })))
     );
+  }
+
+  checkConnectionStatus(): Observable<ConnectionStatus> {
+    return this.http.get<ConnectionStatus>(`${this.apiUrl}/status`);
   }
 }

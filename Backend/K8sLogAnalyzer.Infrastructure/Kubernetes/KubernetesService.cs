@@ -1,17 +1,19 @@
 using k8s;
 using k8s.Autorest;
 using K8sLogAnalyzer.Application.Interfaces;
+using K8sLogAnalyzer.Application.DTOs;
 
 namespace K8sLogAnalyzer.Infrastructure.Kubernetes;
 
 public class KubernetesService : IKubernetesService
 {
     private readonly IKubernetes _kubernetesClient;
+    private readonly KubernetesClientConfiguration _config;
 
     public KubernetesService()
     {
-        var config = KubernetesClientConfiguration.BuildDefaultConfig();
-        _kubernetesClient = new k8s.Kubernetes(config);
+        _config = KubernetesClientConfiguration.BuildDefaultConfig();
+        _kubernetesClient = new k8s.Kubernetes(_config);
     }
 
     public async Task<string> GetPodLogsAsync(
@@ -101,6 +103,65 @@ public class KubernetesService : IKubernetesService
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Error listing pods in namespace '{namespaceName}': {ex.Message}", ex);
+        }
+    }
+
+    public async Task<ClusterInfoDto> GetClusterInfoAsync(CancellationToken cancellationToken = default)
+    {
+        var clusterInfo = new ClusterInfoDto
+        {
+            ServerUrl = _config.Host,
+            ContextName = _config.CurrentContext,
+            ClusterName = ExtractClusterName(_config.Host)
+        };
+
+        try
+        {
+            // Tenta fazer uma chamada simples à API do Kubernetes para verificar conectividade
+            await _kubernetesClient.CoreV1.ListNamespaceAsync(
+                limit: 1,
+                cancellationToken: cancellationToken
+            ).ConfigureAwait(false);
+            
+            clusterInfo.Connected = true;
+            clusterInfo.Status = "Connected";
+        }
+        catch
+        {
+            clusterInfo.Connected = false;
+            clusterInfo.Status = "Disconnected";
+        }
+
+        return clusterInfo;
+    }
+
+    private string ExtractClusterName(string hostUrl)
+    {
+        try
+        {
+            var uri = new Uri(hostUrl);
+            var host = uri.Host;
+            
+            // Tentar extrair nome do cluster de padrões comuns
+            // Ex: https://api.cluster-name.k8s.io -> cluster-name
+            // Ex: https://127.0.0.1:6443 -> localhost
+            if (host.Contains("localhost") || host.StartsWith("127.") || host.StartsWith("192.168."))
+            {
+                return "local";
+            }
+            
+            var parts = host.Split('.');
+            if (parts.Length > 1)
+            {
+                // Pegar o primeiro segmento relevante
+                return parts[0].Replace("api", "").Trim('-');
+            }
+            
+            return host;
+        }
+        catch
+        {
+            return "unknown";
         }
     }
 }
