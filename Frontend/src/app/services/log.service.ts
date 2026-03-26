@@ -12,6 +12,13 @@ export interface ConnectionStatus {
   serverUrl?: string;
 }
 
+export interface KubernetesContext {
+  name: string;
+  cluster: string;
+  user: string;
+  isCurrent: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -48,5 +55,15 @@ export class LogService {
 
   checkConnectionStatus(): Observable<ConnectionStatus> {
     return this.http.get<ConnectionStatus>(`${this.apiUrl}/status`);
+  }
+
+  getAvailableContexts(): Observable<KubernetesContext[]> {
+    return this.http.get<KubernetesContext[]>(`${this.apiUrl}/contexts`);
+  }
+
+  switchContext(contextName: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/contexts/switch`, JSON.stringify(contextName), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

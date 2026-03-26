@@ -18,6 +18,39 @@
             <span class="cluster-name">{{ clusterName }}</span>
           </div>
         </div>
+        <button mat-icon-button 
+                [matMenuTriggerFor]="contextMenu" 
+                class="context-menu-button"
+                matTooltip="Trocar contexto Kubernetes"
+                [disabled]="isLoadingContexts || isSwitchingContext">
+          <mat-icon>swap_horiz</mat-icon>
+        </button>
+        <mat-menu #contextMenu="matMenu" class="context-menu">
+          <div class="context-menu-header" mat-menu-item disabled>
+            <mat-icon>settings</mat-icon>
+            <span>Selecione o Contexto</span>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item 
+                  *ngFor="let context of availableContexts" 
+                  (click)="switchToContext(context.name)"
+                  [disabled]="isSwitchingContext"
+                  [class.active-context]="context.isCurrent">
+            <mat-icon *ngIf="context.isCurrent" class="check-icon">check_circle</mat-icon>
+            <mat-icon *ngIf="!context.isCurrent" class="empty-icon">radio_button_unchecked</mat-icon>
+            <div class="context-item">
+              <span class="context-name">{{ context.name }}</span>
+              <span class="context-cluster">{{ context.cluster }}</span>
+            </div>
+          </button>
+          <div *ngIf="availableContexts.length === 0 && !isLoadingContexts" mat-menu-item disabled>
+            <span class="no-contexts">Nenhum contexto disponível</span>
+          </div>
+          <div *ngIf="isLoadingContexts" mat-menu-item disabled>
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Carregando...</span>
+          </div>
+        </mat-menu>
       </div>
     </mat-card-header>
     <mat-card-content>

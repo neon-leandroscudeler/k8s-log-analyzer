@@ -7,8 +7,9 @@ namespace K8sLogAnalyzer.Infrastructure.Kubernetes;
 
 public class KubernetesService : IKubernetesService
 {
-    private readonly IKubernetes _kubernetesClient;
-    private readonly KubernetesClientConfiguration _config;
+    private IKubernetes _kubernetesClient;
+    private KubernetesClientConfiguration _config;
+    private readonly object _lockObject = new object();
 
     public KubernetesService()
     {
@@ -163,5 +164,68 @@ public class KubernetesService : IKubernetesService
         {
             return "unknown";
         }
+    }
+
+    public async Task<List<KubernetesContextDto>> GetAvailableContextsAsync(CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                var k8sConfig = KubernetesClientConfiguration.LoadKubeConfig();
+                var contexts = new List<KubernetesContextDto>();
+
+                foreach (var context in k8sConfig.Contexts)
+                {
+                    contexts.Add(new KubernetesContextDto
+                    {
+                        Name = context.Name,
+                        Cluster = context.ContextDetails?.Cluster ?? "unknown",
+                        User = context.ContextDetails?.User ?? "unknown",
+                        IsCurrent = context.Name == k8sConfig.CurrentContext
+                    });
+                }
+
+                return contexts.OrderBy(c => c.Name).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error loading kubeconfig contexts: {ex.Message}", ex);
+            }
+        }, cancellationToken);
+    }
+
+    public async Task<bool> SwitchContextAsync(string contextName, CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            try
+            {
+                lock (_lockObject)
+                {
+                    // Carregar config com o novo contexto
+                    var k8sConfig = KubernetesClientConfiguration.LoadKubeConfig();
+                    
+                    // Verificar se o contexto existe
+                    var context = k8sConfig.Contexts.FirstOrDefault(c => c.Name == contextName);
+                    if (context == null)
+                    {
+                        throw new InvalidOperationException($"Context '{contextName}' not found");
+                    }
+
+                    // Criar nova configuração com o contexto especificado
+                    _config = KubernetesClientConfiguration.BuildConfigFromConfigObject(k8sConfig, contextName);
+                    
+                    // Recriar o cliente
+                    _kubernetesClient = new k8s.Kubernetes(_config);
+                    
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Error switching to context '{contextName}': {ex.Message}", ex);
+            }
+        }, cancellationToken);
     }
 }

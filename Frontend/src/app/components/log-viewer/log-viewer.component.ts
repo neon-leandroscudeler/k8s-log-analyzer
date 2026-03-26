@@ -14,7 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LogService } from '../../services/log.service';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
+import { LogService, KubernetesContext } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
 @Component({
@@ -35,7 +37,9 @@ import { LogEntry } from '../../models/log-entry.model';
     MatIconModule,
     MatSnackBarModule,
     MatSelectModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatMenuModule,
+    MatDividerModule
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
@@ -56,6 +60,9 @@ export class LogViewerComponent implements OnInit, OnDestroy {
   clusterName: string = '';
   contextName: string = '';
   serverUrl: string = '';
+  availableContexts: KubernetesContext[] = [];
+  isLoadingContexts: boolean = false;
+  isSwitchingContext: boolean = false;
   private statusCheckInterval: any;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -81,6 +88,7 @@ export class LogViewerComponent implements OnInit, OnDestroy {
 
     // Verificar status inicial
     this.checkK8sConnectionStatus();
+    this.loadAvailableContexts();
 
     // Verificar status a cada 60 segundos
     this.statusCheckInterval = setInterval(() => {
@@ -109,6 +117,60 @@ export class LogViewerComponent implements OnInit, OnDestroy {
         this.contextName = 'Unknown';
         this.serverUrl = 'Unknown';
         this.checkingConnection = false;
+      }
+    });
+  }
+
+  loadAvailableContexts(): void {
+    this.isLoadingContexts = true;
+    this.logService.getAvailableContexts().subscribe({
+      next: (contexts) => {
+        this.availableContexts = contexts;
+        this.isLoadingContexts = false;
+      },
+      error: (error) => {
+        console.error('Error loading contexts:', error);
+        this.isLoadingContexts = false;
+        this.snackBar.open('Failed to load available contexts', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top'
+        });
+      }
+    });
+  }
+
+  switchToContext(contextName: string): void {
+    if (this.isSwitchingContext) return;
+    
+    this.isSwitchingContext = true;
+    this.logService.switchContext(contextName).subscribe({
+      next: () => {
+        this.snackBar.open(`Switched to context: ${contextName}`, 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom'
+        });
+        
+        // Atualizar status após trocar contexto
+        setTimeout(() => {
+          this.checkK8sConnectionStatus();
+          this.loadAvailableContexts();
+          this.isSwitchingContext = false;
+        }, 500);
+      },
+      error: (error) => {
+        this.isSwitchingContext = false;
+        let errorMessage = 'Failed to switch context';
+        if (error.error?.error) {
+          errorMessage = error.error.error;
+        }
+        this.snackBar.open(errorMessage, 'Close', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
       }
     });
   }

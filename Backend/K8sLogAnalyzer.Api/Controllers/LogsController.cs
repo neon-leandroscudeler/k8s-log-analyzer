@@ -33,6 +33,64 @@ public class LogsController : ControllerBase
     }
 
     /// <summary>
+    /// Get available Kubernetes contexts from kubeconfig
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of available contexts</returns>
+    [HttpGet("contexts")]
+    [ProducesResponseType(typeof(List<KubernetesContextDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<List<KubernetesContextDto>>> GetContexts(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var contexts = await _kubernetesService.GetAvailableContextsAsync(cancellationToken);
+            return Ok(contexts);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving Kubernetes contexts");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "Failed to retrieve contexts" });
+        }
+    }
+
+    /// <summary>
+    /// Switch to a different Kubernetes context
+    /// </summary>
+    /// <param name="contextName">Name of the context to switch to</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success status</returns>
+    [HttpPost("contexts/switch")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> SwitchContext([FromBody] string contextName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(contextName))
+            {
+                return BadRequest(new { error = "Context name is required" });
+            }
+
+            await _kubernetesService.SwitchContextAsync(contextName, cancellationToken);
+            _logger.LogInformation("Switched to Kubernetes context: {ContextName}", contextName);
+            
+            return Ok(new { message = $"Successfully switched to context '{contextName}'" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Failed to switch context to {ContextName}", contextName);
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error switching to context {ContextName}", contextName);
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "Failed to switch context" });
+        }
+    }
+
+    /// <summary>
     /// Retrieve logs from a Kubernetes pod
     /// </summary>
     /// <param name="namespace">The Kubernetes namespace</param>
