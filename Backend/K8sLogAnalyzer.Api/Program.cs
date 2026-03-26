@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 
 // Register application services
 builder.Services.AddScoped<ILogService, LogService>();
-builder.Services.AddScoped<IKubernetesService, KubernetesService>();
+builder.Services.AddSingleton<IKubernetesService, KubernetesService>();
 builder.Services.AddSingleton<ILogParser, LogParser>();
 
 // Add logging
