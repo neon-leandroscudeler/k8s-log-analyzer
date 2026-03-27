@@ -94,6 +94,43 @@
         <mat-icon matSuffix>filter_list</mat-icon>
       </mat-form-field>
 
+      <div class="log-level-filters">
+        <span class="filter-label">
+          <mat-icon>label</mat-icon>
+          Filtrar por tipo:
+        </span>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['INFO']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Info
+        </mat-checkbox>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['WARN']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Warn
+        </mat-checkbox>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['WARNING']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Warning
+        </mat-checkbox>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['ERROR']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Error
+        </mat-checkbox>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['DEBUG']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Debug
+        </mat-checkbox>
+      </div>
+
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
           

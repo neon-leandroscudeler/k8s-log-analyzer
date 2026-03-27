@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using K8sLogAnalyzer.Application.DTOs;
 using K8sLogAnalyzer.Application.Interfaces;
@@ -40,6 +41,14 @@ public class LogParser : ILogParser
             if (string.IsNullOrWhiteSpace(trimmedLine))
                 continue;
 
+            // Tentar parsear como JSON primeiro
+            if (TryParseJsonLog(trimmedLine, out var jsonLogEntry))
+            {
+                logEntries.Add(jsonLogEntry);
+                continue;
+            }
+
+            // Se não for JSON, usar regex pattern
             var match = LogPattern.Match(trimmedLine);
 
             if (match.Success)
@@ -74,6 +83,65 @@ public class LogParser : ILogParser
         }
 
         return logEntries;
+    }
+
+    private bool TryParseJsonLog(string line, out LogEntryDto logEntry)
+    {
+        logEntry = null!;
+        
+        try
+        {
+            // Tentar parsear como JSON
+            using var doc = JsonDocument.Parse(line);
+            var root = doc.RootElement;
+
+            // Extrair timestamp
+            DateTime timestamp = DateTime.UtcNow;
+            if (root.TryGetProperty("@timestamp", out var timestampElement))
+            {
+                if (timestampElement.ValueKind == JsonValueKind.String)
+                {
+                    TryParseTimestamp(timestampElement.GetString() ?? "", out timestamp);
+                }
+            }
+            else if (root.TryGetProperty("timestamp", out timestampElement))
+            {
+                if (timestampElement.ValueKind == JsonValueKind.String)
+                {
+                    TryParseTimestamp(timestampElement.GetString() ?? "", out timestamp);
+                }
+            }
+
+            // Extrair level
+            string level = "INFO";
+            if (root.TryGetProperty("log.level", out var levelElement))
+            {
+                level = levelElement.GetString() ?? "INFO";
+            }
+            else if (root.TryGetProperty("level", out levelElement))
+            {
+                level = levelElement.GetString() ?? "INFO";
+            }
+            else if (root.TryGetProperty("severity", out levelElement))
+            {
+                level = levelElement.GetString() ?? "INFO";
+            }
+
+            // Manter o JSON completo na mensagem
+            logEntry = new LogEntryDto
+            {
+                Timestamp = timestamp,
+                Level = NormalizeLogLevel(level),
+                Message = line
+            };
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            // Não é JSON válido
+            return false;
+        }
     }
 
     private bool TryParseTimestamp(string timestampStr, out DateTime timestamp)

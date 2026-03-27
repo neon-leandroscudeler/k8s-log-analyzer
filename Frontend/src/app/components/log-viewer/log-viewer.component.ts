@@ -16,6 +16,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { LogService, KubernetesContext } from '../../services/log.service';
 import { LogEntry } from '../../models/log-entry.model';
 
@@ -39,7 +40,8 @@ import { LogEntry } from '../../models/log-entry.model';
     MatSelectModule,
     MatTooltipModule,
     MatMenuModule,
-    MatDividerModule
+    MatDividerModule,
+    MatCheckboxModule
   ],
   templateUrl: './log-viewer.component.html',
   styleUrls: ['./log-viewer.component.scss']
@@ -53,6 +55,15 @@ export class LogViewerComponent implements OnInit, OnDestroy {
   filterValue: string = '';
   isLoading: boolean = false;
   searchMode: 'primary' | 'all' | 'without-canary' = 'primary';
+  
+  // Filtros de nível de log
+  selectedLogLevels: { [key: string]: boolean } = {
+    'INFO': true,
+    'WARN': true,
+    'WARNING': true,
+    'ERROR': true,
+    'DEBUG': true
+  };
   
   // Status de conexão
   k8sConnected: boolean = false;
@@ -77,7 +88,24 @@ export class LogViewerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.dataSource.filterPredicate = (data: LogEntry, filter: string) => {
-      const searchStr = filter.toLowerCase();
+      // Verificar se o nível do log está selecionado
+      const levelUpper = data.level.toUpperCase().trim();
+      const isLevelSelected = this.selectedLogLevels[levelUpper] === true;
+      
+      if (!isLevelSelected) {
+        return false;
+      }
+      
+      // Remover o timestamp anexado para forçar atualização
+      const actualFilter = filter.split('|')[0];
+      
+      // Se não há filtro de texto, mostrar todos os logs com nível selecionado
+      if (!actualFilter) {
+        return true;
+      }
+      
+      // Aplicar filtro de texto
+      const searchStr = actualFilter.toLowerCase();
       return (
         data.timestamp.toLocaleString().toLowerCase().includes(searchStr) ||
         data.level.toLowerCase().includes(searchStr) ||
@@ -250,8 +278,18 @@ export class LogViewerComponent implements OnInit, OnDestroy {
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase() + '|' + Date.now();
 
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  onLogLevelFilterChange(): void {
+    // Forçar reavaliação anexando um timestamp único ao filtro
+    const currentFilter = this.dataSource.filter.split('|')[0];
+    this.dataSource.filter = currentFilter + '|' + Date.now();
+    
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
