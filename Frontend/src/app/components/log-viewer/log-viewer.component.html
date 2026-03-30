@@ -131,6 +131,50 @@
         </mat-checkbox>
       </div>
 
+      <div class="log-counts-summary" *ngIf="totalLogsLoaded > 0">
+        <div class="summary-header">
+          <mat-icon>analytics</mat-icon>
+          <span class="summary-title">Totalizador de Logs Carregados</span>         
+        </div>
+        <div class="counts-container">
+          <div class="count-item info-count" *ngIf="logCountsByLevel['INFO'] > 0">
+            <mat-icon>info</mat-icon>
+            <span class="count-label">INFO</span>
+            <span class="count-value">{{ logCountsByLevel['INFO'] }}</span>
+          </div>
+          <div class="count-item warn-count" *ngIf="logCountsByLevel['WARN'] > 0">
+            <mat-icon>warning</mat-icon>
+            <span class="count-label">WARN</span>
+            <span class="count-value">{{ logCountsByLevel['WARN'] }}</span>
+          </div>
+          <div class="count-item warning-count" *ngIf="logCountsByLevel['WARNING'] > 0">
+            <mat-icon>warning</mat-icon>
+            <span class="count-label">WARNING</span>
+            <span class="count-value">{{ logCountsByLevel['WARNING'] }}</span>
+          </div>
+          <div class="count-item error-count" *ngIf="logCountsByLevel['ERROR'] > 0">
+            <mat-icon>error</mat-icon>
+            <span class="count-label">ERROR</span>
+            <span class="count-value">{{ logCountsByLevel['ERROR'] }}</span>
+          </div>
+          <div class="count-item debug-count" *ngIf="logCountsByLevel['DEBUG'] > 0">
+            <mat-icon>bug_report</mat-icon>
+            <span class="count-label">DEBUG</span>
+            <span class="count-value">{{ logCountsByLevel['DEBUG'] }}</span>
+          </div>
+          <div class="count-item other-count" *ngIf="logCountsByLevel['OTHER'] > 0">
+            <mat-icon>help_outline</mat-icon>
+            <span class="count-label">OTHER</span>
+            <span class="count-value">{{ logCountsByLevel['OTHER'] }}</span>
+          </div>
+          <div class="count-item total-count">
+            <mat-icon>summarize</mat-icon>
+            <span class="count-label">TOTAL</span>
+            <span class="count-value">{{ totalLogsLoaded }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
           

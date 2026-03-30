@@ -65,6 +65,17 @@ export class LogViewerComponent implements OnInit, OnDestroy {
     'DEBUG': true
   };
   
+  // Totalizador de logs por tipo
+  logCountsByLevel: { [key: string]: number } = {
+    'INFO': 0,
+    'WARN': 0,
+    'WARNING': 0,
+    'ERROR': 0,
+    'DEBUG': 0,
+    'OTHER': 0
+  };
+  totalLogsLoaded: number = 0;
+  
   // Status de conexão
   k8sConnected: boolean = false;
   checkingConnection: boolean = true;
@@ -239,6 +250,7 @@ export class LogViewerComponent implements OnInit, OnDestroy {
         // 'all' não filtra nada
         
         this.dataSource.data = logs;
+        this.calculateLogCounts(logs);
         this.isLoading = false;
         
         const uniquePods = new Set(logs.map(l => l.podName));
@@ -293,6 +305,30 @@ export class LogViewerComponent implements OnInit, OnDestroy {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  calculateLogCounts(logs: LogEntry[]): void {
+    // Resetar contadores
+    this.logCountsByLevel = {
+      'INFO': 0,
+      'WARN': 0,
+      'WARNING': 0,
+      'ERROR': 0,
+      'DEBUG': 0,
+      'OTHER': 0
+    };
+    
+    // Contar logs por tipo
+    logs.forEach(log => {
+      const levelUpper = log.level.toUpperCase().trim();
+      if (this.logCountsByLevel.hasOwnProperty(levelUpper)) {
+        this.logCountsByLevel[levelUpper]++;
+      } else {
+        this.logCountsByLevel['OTHER']++;
+      }
+    });
+    
+    this.totalLogsLoaded = logs.length;
   }
 
   getClusterTooltip(): string {
