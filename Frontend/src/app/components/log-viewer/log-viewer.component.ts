@@ -55,6 +55,7 @@ export class LogViewerComponent implements OnInit, OnDestroy {
   filterValue: string = '';
   isLoading: boolean = false;
   searchMode: 'primary' | 'all' | 'without-canary' = 'primary';
+  filtersCollapsed: boolean = false;
   
   // Filtros de nível de log
   selectedLogLevels: { [key: string]: boolean } = {
@@ -62,7 +63,8 @@ export class LogViewerComponent implements OnInit, OnDestroy {
     'WARN': true,
     'WARNING': true,
     'ERROR': true,
-    'DEBUG': true
+    'DEBUG': true,
+    'OTHER': true
   };
   
   // Totalizador de logs por tipo
@@ -101,7 +103,11 @@ export class LogViewerComponent implements OnInit, OnDestroy {
     this.dataSource.filterPredicate = (data: LogEntry, filter: string) => {
       // Verificar se o nível do log está selecionado
       const levelUpper = data.level.toUpperCase().trim();
-      const isLevelSelected = this.selectedLogLevels[levelUpper] === true;
+      const knownLevels = ['INFO', 'WARN', 'WARNING', 'ERROR', 'DEBUG'];
+      const isKnownLevel = knownLevels.includes(levelUpper);
+      const isLevelSelected = isKnownLevel 
+        ? this.selectedLogLevels[levelUpper] === true 
+        : this.selectedLogLevels['OTHER'] === true;
       
       if (!isLevelSelected) {
         return false;

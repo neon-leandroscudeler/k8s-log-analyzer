@@ -1,5 +1,5 @@
 <div class="log-viewer-container">
-  <mat-card class="filter-card">
+  <mat-card class="filter-card" *ngIf="!filtersCollapsed">
     <mat-card-header>
       <mat-card-title>
         <mat-icon>search</mat-icon>
@@ -88,13 +88,22 @@
 
   <mat-card class="table-card">
     <mat-card-content>
-      <mat-form-field appearance="outline" class="filter-input">
+      <div class="collapse-toggle">
+        <button mat-icon-button (click)="filtersCollapsed = !filtersCollapsed" 
+                [matTooltip]="filtersCollapsed ? 'Mostrar filtros' : 'Ocultar filtros'">
+          <mat-icon>{{ filtersCollapsed ? 'expand_more' : 'expand_less' }}</mat-icon>
+        </button>
+        <span class="collapse-label" (click)="filtersCollapsed = !filtersCollapsed">
+          {{ filtersCollapsed ? 'Mostrar filtros' : 'Ocultar filtros' }}
+        </span>
+      </div>
+      <mat-form-field appearance="outline" class="filter-input" *ngIf="!filtersCollapsed">
         <mat-label>Filter logs</mat-label>
         <input matInput (keyup)="applyFilter($event)" placeholder="Search in all columns...">
         <mat-icon matSuffix>filter_list</mat-icon>
       </mat-form-field>
 
-      <div class="log-level-filters">
+      <div class="log-level-filters" *ngIf="!filtersCollapsed">
         <span class="filter-label">
           <mat-icon>label</mat-icon>
           Filtrar por tipo:
@@ -129,9 +138,15 @@
           color="primary">
           Debug
         </mat-checkbox>
+        <mat-checkbox 
+          [(ngModel)]="selectedLogLevels['OTHER']" 
+          (change)="onLogLevelFilterChange()"
+          color="primary">
+          Other
+        </mat-checkbox>
       </div>
 
-      <div class="log-counts-summary" *ngIf="totalLogsLoaded > 0">
+      <div class="log-counts-summary" *ngIf="totalLogsLoaded > 0 && !filtersCollapsed">
         <div class="summary-header">
           <mat-icon>analytics</mat-icon>
           <span class="summary-title">Totalizador de Logs Carregados</span>         
