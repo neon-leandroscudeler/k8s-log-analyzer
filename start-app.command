@@ -29,6 +29,21 @@ APP_DIR="$SCRIPT_DIR/Published/Backend"
 
 echo "Starting K8s Log Analyzer on http://localhost:5000..."
 
+# Kill any process already using port 5000 before starting
+EXISTING_PIDS=$(lsof -ti tcp:5000 2>/dev/null)
+if [ -n "$EXISTING_PIDS" ]; then
+    echo "Port 5000 is in use. Stopping existing process(es): $EXISTING_PIDS"
+    kill $EXISTING_PIDS 2>/dev/null
+    sleep 2
+    # Force kill if still alive
+    STILL_RUNNING=$(lsof -ti tcp:5000 2>/dev/null)
+    if [ -n "$STILL_RUNNING" ]; then
+        echo "Force stopping: $STILL_RUNNING"
+        kill -9 $STILL_RUNNING 2>/dev/null
+        sleep 1
+    fi
+fi
+
 # Start the application in the background
 cd "$APP_DIR"
 echo "Launching application from: $APP_DIR"

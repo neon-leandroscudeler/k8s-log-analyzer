@@ -12,6 +12,12 @@ if not exist "Published\Backend\K8sLogAnalyzer.Api.exe" (
     exit /b 1
 )
 
+echo Checking for existing process on port 5000...
+for /f "tokens=5" %%p in ('netstat -ano ^| findstr ":5000 " ^| findstr "LISTENING"') do (
+    echo Port 5000 is in use by PID %%p. Stopping it...
+    taskkill /PID %%p /F > nul 2>&1
+)
+
 echo Starting K8s Log Analyzer on http://localhost:5000...
 start "K8s Log Analyzer" /D "%~dp0Published\Backend" K8sLogAnalyzer.Api.exe
 
