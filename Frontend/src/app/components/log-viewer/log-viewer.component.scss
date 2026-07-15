@@ -117,8 +117,17 @@ mat-card-header {
   border-radius: 6px;
   flex-wrap: wrap;
   font-size: 12px;
-  .filter-label { display: flex; align-items: center; gap: 6px; font-weight: 500; color: #bb86fc; font-size: 12px; }
+  .filter-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: #bb86fc;
+    font-size: 12px;
+    &.separator { margin-left: auto; }
+  }
   ::ng-deep .mat-mdc-checkbox label { font-size: 12px; }
+  .message-display-field { width: 180px; font-size: 12px; }
 }
 
 .table-container {

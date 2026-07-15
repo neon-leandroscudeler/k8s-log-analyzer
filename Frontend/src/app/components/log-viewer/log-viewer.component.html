@@ -102,42 +102,55 @@
           <mat-icon>label</mat-icon>
           Filtrar por tipo:
         </span>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['INFO']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['INFO']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Info
         </mat-checkbox>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['WARN']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['WARN']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Warn
         </mat-checkbox>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['WARNING']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['WARNING']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Warning
         </mat-checkbox>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['ERROR']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['ERROR']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Error
         </mat-checkbox>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['DEBUG']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['DEBUG']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Debug
         </mat-checkbox>
-        <mat-checkbox 
-          [(ngModel)]="selectedLogLevels['OTHER']" 
+        <mat-checkbox
+          [(ngModel)]="selectedLogLevels['OTHER']"
           (change)="onLogLevelFilterChange()"
           color="primary">
           Other
         </mat-checkbox>
+
+        <span class="filter-label separator">
+          <mat-icon>message</mat-icon>
+          Exibição da Mensagem:
+        </span>
+        <mat-form-field appearance="outline" class="message-display-field">
+          <mat-label>Modo de Exibição</mat-label>
+          <mat-select [(ngModel)]="messageDisplayMode" color="primary">
+            <mat-option value="all">All</mat-option>
+            <mat-option value="only-message">Only Message</mat-option>
+          </mat-select>
+          <mat-icon matSuffix>visibility</mat-icon>
+        </mat-form-field>
       </div>
 
       <div class="log-counts-summary" *ngIf="totalLogsLoaded > 0 && !filtersCollapsed">
@@ -218,7 +231,7 @@
           <!-- Message Column -->
           <ng-container matColumnDef="message">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Mensagem</th>
-            <td mat-cell *matCellDef="let log" class="message-cell">{{ log.message }}</td>
+            <td mat-cell *matCellDef="let log" class="message-cell">{{ getDisplayMessage(log.message) }}</td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

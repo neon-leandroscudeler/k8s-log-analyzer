@@ -56,6 +56,7 @@ export class LogViewerComponent implements OnInit, OnDestroy {
   isLoading: boolean = false;
   searchMode: 'primary' | 'all' | 'without-canary' = 'primary';
   filtersCollapsed: boolean = false;
+  messageDisplayMode: 'all' | 'only-message' = 'all';
   
   // Filtros de nível de log
   selectedLogLevels: { [key: string]: boolean } = {
@@ -358,5 +359,17 @@ export class LogViewerComponent implements OnInit, OnDestroy {
       default:
         return 'log-level-default';
     }
+  }
+
+  getDisplayMessage(message: string): string {
+    if (this.messageDisplayMode === 'only-message') {
+      try {
+        const json = JSON.parse(message);
+        return json.message || message;
+      } catch {
+        return message;
+      }
+    }
+    return message;
   }
 }
